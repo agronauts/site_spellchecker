@@ -32,17 +32,16 @@ def get_words(url):
 
 def spell_check(words):
     logging.info('Checking: ', str(words))
-    print('Checking: ', str(words))
     misspelt_words = check_spelling(words)
-    return misspelt_words
+    return set(misspelt_words)
 
 def website_check(words):
     page = requests.post('http://app.aspell.net/lookup', {'dict': 'en_AU', 'words': words}).content
     soup = bs4.BeautifulSoup(page, 'html.parser')
     misspelt_words = [tag.findChildren()[0].text for tag in soup.find_all(name='tr') if len(tag.findChildren()) == 8 and tag.findChildren()[2].text == 'NO']
-    return misspelt_words
+    return set(misspelt_words)
 
-def local_file_check(words):
+def local_file_check():
     with open('words.txt', 'r') as dictionary_file:
         correct_words = set(word.strip() for word in dictionary_file)
     def inner(words):
@@ -50,7 +49,7 @@ def local_file_check(words):
         return misspelt_words
     return inner
 
-check_spelling = website_check
+check_spelling = local_file_check()
 
 
 for url in urls:
