@@ -26,10 +26,13 @@ urls = [
 
 
 def get_words(url):
-    page = requests.get(url).content
-    soup = bs4.BeautifulSoup(page, 'html.parser')
-    words = set(re.findall(r'\b[a-z]+\b', soup.text, re.I))
-    return words
+    blacklist = ['script', 'style']
+    soup = bs4.BeautifulSoup(url, 'html.parser')
+    for script in soup(blacklist):
+        script.extract()
+    words = (re.findall(r'\b[a-z]+\b', soup.text, re.I))
+    lower_words = set(word.lower() for word in words)
+    return lower_words
 
 
 def website_check(words):
@@ -47,7 +50,6 @@ def local_file_check():
     return inner
 
 check_spelling = local_file_check()
-
 
 for url in urls:
     words = get_words(url)
