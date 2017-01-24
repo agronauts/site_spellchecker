@@ -5,6 +5,7 @@ class Spider:
 
     def __init__(self, root_url):
         self._content = requests.get(root_url).content
+        print(self._content)
         self.links = self._extract_links(self._content)
 
     def _extract_links(self, page):
