@@ -1,4 +1,5 @@
 from itertools import chain
+from spider import spider
 import re
 import sys
 import pprint
@@ -9,6 +10,7 @@ import reprlib
 
 #logging.basicConfig(filename='spellchecker.log', level=logging.DEBUG)
 logging.StreamHandler(sys.stdout).setLevel(logging.DEBUG)
+check_spelling = local_file_check()
 
 urls = [
     'https://takingshape.com.au/',
@@ -49,13 +51,14 @@ def local_file_check():
         return misspelt_words
     return inner
 
-check_spelling = local_file_check()
+def main()
+    for url in urls:
+        words = get_words(url)
+        logging.info('Checking: ', str(words))
+        misspelt_words = set(check_spelling(words))
+        print(url, 'had', len(misspelt_words), 'misspelt words:')
+        print(reprlib.repr(misspelt_words))
 
-for url in urls:
-    words = get_words(url)
-    logging.info('Checking: ', str(words))
-    misspelt_words = set(check_spelling(words))
-    print(url, 'had', len(misspelt_words), 'misspelt words:')
-    print(reprlib.repr(misspelt_words))
 
-
+if __name__ == '__main__':
+    main()
