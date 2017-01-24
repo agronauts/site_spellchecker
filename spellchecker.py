@@ -5,6 +5,7 @@ import pprint
 import requests
 import bs4
 import logging
+import reprlib
 
 #logging.basicConfig(filename='spellchecker.log', level=logging.DEBUG)
 logging.StreamHandler(sys.stdout).setLevel(logging.DEBUG)
@@ -30,10 +31,6 @@ def get_words(url):
     words = set(re.findall(r'\b[a-z]+\b', soup.text, re.I))
     return words
 
-def spell_check(words):
-    logging.info('Checking: ', str(words))
-    misspelt_words = check_spelling(words)
-    return set(misspelt_words)
 
 def website_check(words):
     page = requests.post('http://app.aspell.net/lookup', {'dict': 'en_AU', 'words': words}).content
@@ -54,8 +51,9 @@ check_spelling = local_file_check()
 
 for url in urls:
     words = get_words(url)
-    misspelt_words = spell_check(words)
+    logging.info('Checking: ', str(words))
+    misspelt_words = set(check_spelling(words))
     print(url, 'had', len(misspelt_words), 'misspelt words:')
-    pprint.pprint(misspelt_words)
+    print(reprlib.repr(misspelt_words))
 
 
