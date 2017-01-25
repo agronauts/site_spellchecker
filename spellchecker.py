@@ -1,5 +1,5 @@
 from itertools import chain
-from spider import spider
+from spider import Spider
 import re
 import sys
 import pprint
@@ -10,7 +10,6 @@ import reprlib
 
 #logging.basicConfig(filename='spellchecker.log', level=logging.DEBUG)
 logging.StreamHandler(sys.stdout).setLevel(logging.DEBUG)
-check_spelling = local_file_check()
 
 urls = [
     'https://takingshape.com.au/',
@@ -28,11 +27,15 @@ urls = [
 
 
 def get_words(url):
-    blacklist = ['script', 'style']
-    soup = bs4.BeautifulSoup(url, 'html.parser')
-    for script in soup(blacklist):
-        script.extract()
-    words = (re.findall(r'\b[a-z]+\b', soup.text, re.I))
+    words = []
+    spider = Spider(url)
+    gen = iter(spider)
+    for page in gen:
+        blacklist = ['script', 'style']
+        soup = bs4.BeautifulSoup(page, 'html.parser')
+        for script in soup(blacklist):
+            script.extract()
+        words.extend(re.findall(r'\b[a-z]+\b', soup.text, re.I))
     lower_words = set(word.lower() for word in words)
     return lower_words
 
@@ -51,7 +54,7 @@ def local_file_check():
         return misspelt_words
     return inner
 
-def main()
+def main():
     for url in urls:
         words = get_words(url)
         logging.info('Checking: ', str(words))
@@ -61,4 +64,5 @@ def main()
 
 
 if __name__ == '__main__':
+    check_spelling = local_file_check()
     main()
