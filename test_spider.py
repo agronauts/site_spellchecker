@@ -11,6 +11,7 @@ for i in range(1,4):
     test_website_content['thing%d' % i] = b'''<html>
     <h1>Chinatown%d</h1>
     </html>''' % i
+# Index page is last so empty string matches all url's
 test_website_content[''] = b'''<html>
 <h1>Hello world</h1>
 <ul>
@@ -20,12 +21,21 @@ test_website_content[''] = b'''<html>
 </ul>
 </html>'''
 
+cyclic_website_url = 'http://localhost:99998'
+test_cyclic_website_content = OrderedDict()
+test_cyclic_website_content['part1'] = b'''<html><a href="/part2">link2</a>'''
+test_cyclic_website_content['part2'] = b'''<html><a href="/">link3</a>'''
+test_cyclic_website_content[''] = b'''<html><a href="/part1">link1</a>'''
 
 @pytest.fixture(autouse=True)
 def no_requests(monkeypatch):
     def mocked_get(url, *_):
         resp = requests.Response()
-        for name, content in test_website_content.items():
+        if '99999' in url:
+            website_content = test_website_content
+        elif '99998' in url:
+            website_content = test_cyclic_website_content
+        for name, content in website_content.items():
             if name in url:
                 resp._content = content
                 return resp
@@ -56,3 +66,13 @@ def test_process_links_in_initial_page():
         assert spider_page == expected_page
     #Crawl local site
     #Run test server on testing
+
+def test_stops_cycles():
+    expected_pages = [test_cyclic_website_content[name] for name in ['', 'part1', 'part2']]
+
+    spider = Spider(cyclic_website_url)
+    count = 0
+    for _ in spider:
+        assert count <= 3
+        count += 1 #Infinite loop protection
+    assert count == 3
